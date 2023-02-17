@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>API Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<canvas id="myChart"></canvas>
+<script>
+    const ctx = document.getElementById('myChart');
+
+    async function fetchData() {
+        const response = await fetch('http://localhost:3000/generate-data');
+        return response.json();
+    }
+
+    async function createChart() {
+
+
+        const response = await fetchData();
+
+        const timeStamp = [];
+        for (let i = 0; i < response.length; i++) {
+            timeStamp.push(response[i]["1"]);
+        }
+
+        const value = [];
+        for (let i = 0; i < response.length; i++) {
+            value.push(response[i]["3"]);
+        }
+
+        const labels = timeStamp;
+        console.log(labels)
+
+        const data = {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Dataset 1',
+                    data: value,
+                    borderColor: 'rgb(255, 99, 132)',
+                },
+            ]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Chart.js Line Chart'
+                    }
+                }
+            },
+        };
+
+
+        new Chart(ctx, config);
+    }
+
+    createChart();
+</script>
+</body>
+</html>
