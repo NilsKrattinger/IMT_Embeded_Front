@@ -2,50 +2,63 @@ const express = require('express');
 const {SerialPort} = require('serialport');
 const cors = require('cors');
 
+let serialDataBuffer = "";
+let JsonDb = {
+    1: [],
+    2: [],
+    3: []
+}
+
+
 const app = express();
+app.use(express.json()); // middleware to parse JSON request bodies
+
+app.use(cors('*'));
+
 const settings = {
     path: '/dev/ttyACM0', // Replace with the path to your serial port
     baudRate: 115200 // Replace with the baud rate of your serial device
 };
 // Create a new serial port instance
 const port = new SerialPort(settings);
+port.on('data', (chunk) => {
+    for (const byte of chunk) {
+        serialDataBuffer += String.fromCharCode(byte)
+        //dataBuffer.push(String.fromCharCode(byte));
+    }
 
-let dataBuffer = []
-// Use the 'readable' event to read data from the serial port
-port.on('readable', () => {
-    let data = port.read();
-    if (data) {
-        // Append the data to the dataBuffer
-        dataBuffer.push(data)
+    if (chunk.indexOf('}') > 0) {
+        searchAndPrintJsonInBuffer(serialDataBuffer)
     }
 });
 
-// Handle errors that occur while reading from the serial port
 port.on('error', (err) => {
     console.error('Serial port error:', err);
 });
 
-// Use the cors middleware to enable CORS
-app.use(cors());
 
 // Define a route to get the accumulated data in chunks of 32 characters
 app.get('/get-data', (req, res) => {
-    // Split the dataBuffer into chunks of 32 characters
-    let chunks = [];
-    for (let i = 0; i < dataBuffer.length; i += 48) {
-        chunks.push(dataBuffer.slice(i, i + 48));
+    // Convert the dataBuffer array to a single Buffer object
+    let data = JsonDb;
+    // Send the data back to the client in the response
+    JsonDb = {
+        1: [],
+        2: [],
+        3: []
     }
-
-
-    // Convert the chunks to an array of strings
-    let messages = chunks.map(chunk => chunk.toString('ascii'));
-
-    // Send the messages back to the client in the response
-    res.send(messages);
-
-    // Remove the processed data from the dataBuffer
-    dataBuffer = dataBuffer.slice(chunks.length * 32);
+    res.send(JSON.stringify(data))
+    // Clear the dataBuffer array after sending the data
 });
+
+app.post('/configure', (req, res) => {
+    // Convert the dataBuffer array to a single Buffer object
+    console.log(JSON.stringify(req.body.configObject))
+    port.write(JSON.stringify(req.body.configObject))
+    res.send('OK')
+    // Clear the dataBuffer array after sending the data
+});
+
 
 app.get('/generate-data', (req, res) => {
     // Define the number of fake messages to generate
@@ -78,3 +91,57 @@ app.get('/generate-data', (req, res) => {
 app.listen(3000, () => {
     console.log('Server started on port 3000');
 });
+
+function searchAndPrintJsonInBuffer(data) {
+    // Convert the buffer to a string
+
+    let index = data.indexOf('{');
+    let corruptedPart = data.substring(0, index)
+    //console.log("Corrupted : " + corruptedPart)
+
+    data = data.replace(corruptedPart, '');
+
+    // Search for JSON objects in the data string
+    const jsonRegex = /{[\s\S]*?}/g;
+    let match
+    while (match = jsonRegex.exec(data)) {
+        const JSON = formatStringToJson(match[0]);
+       // console.log("JSON FOUNED : ", JSON)
+        JsonDb[JSON['2']].push(JSON)
+    }
+    let treatedDataIndex = data.lastIndexOf('}')
+    let treatedData = data.substring(0, treatedDataIndex + 1)
+
+    data = data.replace(treatedData, '');
+
+    //console.log("untreatedpart : ", data)
+    serialDataBuffer = data;
+
+    //console.log("___________________");
+}
+
+
+function formatStringToJson(str) {
+    // Remove the opening and closing curly braces
+    str = str.substring(1, str.length - 1);
+
+    // Split the string into key-value pairs
+    const pairs = str.split(',');
+
+    // Create an object to hold the key-value pairs
+    const obj = {};
+
+    // Iterate over the key-value pairs and add them to the object
+    for (const pair of pairs) {
+        const [key, value] = pair.split(':');
+
+        // Add the key-value pair to the object with the key in double quotes
+        obj[`${key}`] = value;
+    }
+
+    // Convert the object to a JSON string and parse it to a JSON object
+   // console.log(JSON.stringify(obj))
+    // Return the JSON object
+    return JSON.parse(JSON.stringify(obj));
+}
+
