@@ -1,25 +1,25 @@
-    <!DOCTYPE html>
-    <html lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>API Data Chart</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>API Data Chart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
 
-    <body>
+<body>
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-center mt-3 mb-5">Embedded system dashboard</h1>
-            </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mt-3 mb-5">Embedded system dashboard</h1>
         </div>
+    </div>
 
-        <div class="card">
+    <div class="card">
         <div class="card-header">
             <div class="col-12">
                 <h2>Settings</h2>
@@ -28,20 +28,20 @@
 
         <div class="row justify-content-center mb-5 card-body">
             <div class="col-md-3">
-                <label for="field1">Field 1 (min: 0, max: 10):</label>
-                <input type="number" id="field1" name="field1" class="form-control" min="0" max="10">
+                <label for="field1">Period sensor 1 (min: 100, max: 2000):</label>
+                <input type="number" value="500" id="field1" name="field1" class="form-control" >
             </div>
             <div class="col-md-3">
-                <label for="field2">Field 2 (min: -100, max: 100):</label>
-                <input type="number" id="field2" name="field2" class="form-control" min="-100" max="100">
+                <label for="field2">Period sensor 2 (min: 100, max: 2000):</label>
+                <input type="number" value="1000" id="field2" name="field2" class="form-control" >
             </div>
             <div class="col-md-3 ">
-                <label for="field3">Field 3 (min: -50, max: 50):</label>
-                <input type="number" id="field3" name="field3" class="form-control" min="-50" max="50">
+                <label for="field3">Period sensor 3 (min: 100, max: 2000):</label>
+                <input type="number" value="2000" id="field3" name="field3" class="form-control" >
             </div>
             <div class="col-md-3 ">
-                <label for="field4">Field 4 (min: 0, max: 1000):</label>
-                <input type="number" id="field4" name="field4" class="form-control" min="0" max="1000">
+                <label for="field4">Period send data (min: 1000, max: 10000):</label>
+                <input type="number" id="field4" value="10000" name="field4" class="form-control" >
             </div>
         </div>
 
@@ -49,16 +49,29 @@
         <div class="row justify-content-center mb-2">
             <div class="col-md-12 text-center">
                 <button id="configureBtn" class="btn btn-primary">Configurer</button>
+                <button id="DropDataBtn" class="btn btn-danger">Clear Data</button>
+
             </div>
         </div>
-        </div>
-        <hr>
-        <div class="card">
-            <div class="card-header">
-                <div class="col-12">
-                    <h2>Charts</h2>
-                </div>
+    </div>
+    <hr>
+    <div class="card">
+        <div class="card-header">
+            <div class="col-12">
+                <h2>Charts</h2>
             </div>
+        </div>
+        <div class="row justify-content-center card-body">
+            <div class="col-md-4 mb-3 text-center">
+                <h4>Sensor 1</h4>
+            </div>
+            <div class="col-md-4 mb-3 text-center">
+                <h4>Sensor 2</h4>
+            </div>
+            <div class="col-md-4 mb-3 text-center">
+                <h4>Sensor 3</h4>
+            </div>
+        </div>
         <div class="row justify-content-center card-body">
             <div class="col-md-4 mb-3">
                 <canvas id="chart1"></canvas>
@@ -75,25 +88,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
-
     <script>
         const charts = []
         let chartData = {
-            1 : {
+            1: {
                 value: [],
                 time: []
             },
-            2 : {
+            2: {
                 value: [],
                 time: []
             },
-            3 : {
+            3: {
                 value: [],
                 time: []
             }
         }
+
         function ConfigureTable(chartId) {
-            const chartCanvas = document.getElementById('chart'+chartId);
+            const chartCanvas = document.getElementById('chart' + chartId);
 
 
             // Add a click event listener to the chart canvas
@@ -133,7 +146,7 @@
         }
 
 
-        function createChart(){
+        function createChart() {
             const chart1 = document.getElementById('chart1');
             const chart2 = document.getElementById('chart2');
             const chart3 = document.getElementById('chart3');
@@ -181,14 +194,9 @@
                         legend: {
                             position: 'top',
                         },
-                        title: {
-                            display: true,
-                            text: 'Chart.js Line Chart'
-                        }
                     }
                 },
             };
-
 
 
             charts[1] = (new Chart(chart1, {...config, data: data1}));
@@ -204,14 +212,14 @@
             return response.json();
         }
 
-        function appendData(sensorId,charData,newData) {
+        function appendData(sensorId, charData, newData) {
             charData[sensorId].value = charData[sensorId].value.concat(newData[sensorId].map(a => a["3"]))
             charData[sensorId].time = charData[sensorId].time.concat(newData[sensorId].map(a => a["1"]))
         }
 
-        async function updateData(newData){
+        async function updateData(newData) {
             for (let i = 1; i < 4; i++) {
-                appendData(i,chartData,newData);
+                appendData(i, chartData, newData);
             }
         }
 
@@ -244,12 +252,13 @@
         const field3 = document.getElementById('field3');
         const field4 = document.getElementById('field4');
         const button = document.getElementById('configureBtn');
+        const clearBtn = document.getElementById('DropDataBtn');
 
 
-        field1.addEventListener('change', () => validateFieldValue(field1, 0, 10));
-        field2.addEventListener('change', () => validateFieldValue(field2, 0, 10));
-        field3.addEventListener('change', () => validateFieldValue(field3, 0, 10));
-        field4.addEventListener('change', () => validateFieldValue(field4, 0, 10));
+        field1.addEventListener('change', () => validateFieldValue(field1, 100, 2000));
+        field2.addEventListener('change', () => validateFieldValue(field2, 100, 2000));
+        field3.addEventListener('change', () => validateFieldValue(field3, 100, 2000));
+        field4.addEventListener('change', () => validateFieldValue(field4, 1000, 10000));
 
         function sendConfiguration() {
             fetch('http://localhost:3000/configure', {
@@ -258,15 +267,37 @@
                     'Accept': 'text/plain, */*',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({configObject: {1:field1.value,2:field2.value,3:field3.value,4:field4.value}})
+                body: JSON.stringify({
+                    configObject: {
+                        1: field1.value.toString().padStart(4, '0'),
+                        2: field2.value.toString().padStart(4, '0'),
+                        3: field3.value.toString().padStart(4, '0'),
+                        4: field4.value.toString().padStart(5, '0')
+                    }
+                })
             }).then(res => res.json())
         }
 
-        button.addEventListener('click',() => sendConfiguration());
-
+        button.addEventListener('click', () => sendConfiguration());
 
 
         createChart()
+
+        function clearArrayIfOverSize(array,maxSize){
+            let slicedArray = []
+            if(array.length > maxSize ){
+                slicedArray = array.slice(array.length - maxSize)
+            }
+            return slicedArray
+        }
+
+        function checkArraySize(){
+            for (const chartDatum of chartData) {
+                for (const chartDatumElement of chartDatum) {
+
+                }
+            }
+        }
 
         window.addEventListener('load', function () {
             // Your document is loaded.
@@ -274,14 +305,33 @@
 
             // Invoke the request every 5 seconds.
             setInterval(update, fetchInterval);
+
         });
+
+        clearBtn.addEventListener('click',function (){
+            chartData = {
+                1: {
+                    value: [],
+                    time: []
+                },
+                2: {
+                    value: [],
+                    time: []
+                },
+                3: {
+                    value: [],
+                    time: []
+                }
+            }
+            update()
+        })
+
+
 
 
         // Get a reference to the chart canvas element
 
 
-
-
     </script>
-    </body>
-    </html>
+</body>
+</html>

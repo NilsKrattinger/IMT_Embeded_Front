@@ -97,7 +97,9 @@ function searchAndPrintJsonInBuffer(data) {
 
     let index = data.indexOf('{');
     let corruptedPart = data.substring(0, index)
-    //console.log("Corrupted : " + corruptedPart)
+    if (corruptedPart.length){
+        console.log("Corrupted : " + corruptedPart)
+    }
 
     data = data.replace(corruptedPart, '');
 
@@ -105,8 +107,8 @@ function searchAndPrintJsonInBuffer(data) {
     const jsonRegex = /{[\s\S]*?}/g;
     let match
     while (match = jsonRegex.exec(data)) {
-        const JSON = formatStringToJson(match[0]);
-       // console.log("JSON FOUNED : ", JSON)
+        let JSON = ""
+        JSON = formatStringToJson(match[0]);
         JsonDb[JSON['2']].push(JSON)
     }
     let treatedDataIndex = data.lastIndexOf('}')
@@ -114,10 +116,8 @@ function searchAndPrintJsonInBuffer(data) {
 
     data = data.replace(treatedData, '');
 
-    //console.log("untreatedpart : ", data)
     serialDataBuffer = data;
 
-    //console.log("___________________");
 }
 
 
@@ -139,9 +139,6 @@ function formatStringToJson(str) {
         obj[`${key}`] = value;
     }
 
-    // Convert the object to a JSON string and parse it to a JSON object
-   // console.log(JSON.stringify(obj))
-    // Return the JSON object
     return JSON.parse(JSON.stringify(obj));
 }
 
